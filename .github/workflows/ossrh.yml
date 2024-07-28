@@ -14,13 +14,17 @@ jobs:
         distribution: oracle
         java-version: '17'
         server-id: ossrh
-        server-username: ${{ secrets.OSSRH_USERNAME }}
-        server-password: ${{ secrets.OSSRH_PASSWORD }}
+        server-username: OSSRH_USERNAME
+        server-password: OSSRH_PASSWORD
         gpg-private-key: ${{ secrets.PRIVATE_KEY }}
-        gpg-passphrase: ${{ secrets.PASS_PHRASE }}
+        gpg-passphrase: PASS_PHRASE
 
     - name: Checkout
       uses: actions/checkout@v4.1.7
 
     - name: Deploy
       run: mvn deploy
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        PASS_PHRASE: ${{ secrets.PASS_PHRASE }}
