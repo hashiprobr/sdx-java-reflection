@@ -16,6 +16,8 @@ jobs:
         server-id: ossrh
         server-username: ${{ secrets.OSSRH_USERNAME }}
         server-password: ${{ secrets.OSSRH_PASSWORD }}
+        gpg-private-key: ${{ secrets.PRIVATE_KEY }}
+        gpg-passphrase: ${{ secrets.PASS_PHRASE }}
 
     - name: Checkout
       uses: actions/checkout@v4.1.7
