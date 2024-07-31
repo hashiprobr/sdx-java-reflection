@@ -9,6 +9,6 @@
  */
 
 /**
- * Stub.
+ * Provides reflection interfaces and classes.
  */
 package br.pro.hashi.sdx.reflection;
