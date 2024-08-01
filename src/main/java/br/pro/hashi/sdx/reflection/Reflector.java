@@ -17,7 +17,7 @@ import org.objenesis.instantiator.ObjectInstantiator;
 
 import java.io.File;
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
@@ -26,25 +26,25 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
- * Stub.
+ * Provides reflection methods.
  */
-public class Reflector {
+public final class Reflector {
     private static final Objenesis OBJENESIS = new ObjenesisStd();
     private static final Pattern PATTERN = Pattern.compile("\\.");
 
-    private final Lookup lookup;
     private final ClassLoader loader;
+    private final MethodHandles.Lookup lookup;
     private final ConcurrentMap<Class<?>, ObjectInstantiator<?>> cache;
 
     /**
-     * Stub.
+     * Constructs a new reflector.
      *
-     * @param lookup Stub.
-     * @param loader Stub.
+     * @param loader A class loader.
+     * @param lookup A lookup object.
      */
-    public Reflector(Lookup lookup, ClassLoader loader) {
-        this.lookup = lookup;
+    public Reflector(ClassLoader loader, MethodHandles.Lookup lookup) {
         this.loader = loader;
+        this.lookup = lookup;
         this.cache = new ConcurrentHashMap<>();
     }
 
@@ -67,12 +67,11 @@ public class Reflector {
      *
      * @param type     Stub.
      * @param typeName Stub.
-     * @param <E>      Stub.
      * @return Stub.
      */
-    public <E> MethodHandle getCreator(Class<E> type, String typeName) {
+    public MethodHandle getCreator(Class<?> type, String typeName) {
         checkInstantiable(type, typeName);
-        Constructor<E> constructor;
+        Constructor<?> constructor;
         try {
             constructor = type.getDeclaredConstructor();
         } catch (NoSuchMethodException exception) {
@@ -244,13 +243,12 @@ public class Reflector {
      * @param packageName Stub.
      * @param superType   Stub.
      * @param <T>         Stub.
-     * @param <S>         Stub.
      * @return Stub.
      */
-    public <T, S extends T> Iterable<Class<S>> getInstantiableSubTypes(String packageName, Class<T> superType) {
+    public <T> Iterable<Class<? extends T>> getInstantiableSubTypes(String packageName, Class<T> superType) {
         Objects.requireNonNull(packageName, "Package name cannot be null");
 
-        Queue<Class<S>> queue = new LinkedList<>();
+        Queue<Class<? extends T>> queue = new LinkedList<>();
 
         Stack<String> stack = new Stack<>();
         stack.push(PATTERN.matcher(packageName).replaceAll("/"));
@@ -262,7 +260,7 @@ public class Reflector {
             }
 
             @Override
-            public Class<S> next() {
+            public Class<? extends T> next() {
                 if (queue.isEmpty() && !stack.isEmpty()) {
                     String name = stack.pop();
 
@@ -274,7 +272,7 @@ public class Reflector {
 
                             String[] baseNames = file.list();
                             if (baseNames == null) {
-                                Class<S> subType = getInstantiableSubType(name, superType);
+                                Class<? extends T> subType = getInstantiableSubType(name, superType);
                                 if (subType != null) {
                                     queue.add(subType);
                                 }
@@ -292,7 +290,7 @@ public class Reflector {
         };
     }
 
-    private <T, S extends T> Class<S> getInstantiableSubType(String name, Class<T> superType) {
+    private <T> Class<? extends T> getInstantiableSubType(String name, Class<T> superType) {
         if (name.endsWith(".class")) {
             String typeName = name.substring(0, name.lastIndexOf('.'));
             try {
@@ -457,11 +455,11 @@ public class Reflector {
     }
 
     /**
-     * Stub.
+     * Casts a given object to a generic type.
      *
-     * @param instance Stub.
-     * @param <T>      Stub.
-     * @return Stub.
+     * @param instance The object.
+     * @param <T>      The type.
+     * @return The object cast to the type.
      */
     public <T> T uncheckedCast(Object instance) {
         @SuppressWarnings("unchecked")

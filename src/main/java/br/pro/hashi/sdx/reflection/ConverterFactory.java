@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Stub.
  */
-public class ConverterFactory {
+public final class ConverterFactory {
     private final Reflector reflector;
     private final ConcurrentMap<Class<? extends Converter<?, ?>>, Converter<?, ?>> cache;
 

@@ -24,7 +24,7 @@ import java.util.function.Function;
 /**
  * Stub.
  */
-public class ParserFactory {
+public final class ParserFactory {
     private final Reflector reflector;
     private final ConcurrentMap<Class<?>, Function<String, ?>> cache;
 
