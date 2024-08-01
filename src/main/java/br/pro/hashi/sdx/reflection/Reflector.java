@@ -347,15 +347,15 @@ public final class Reflector {
     /**
      * Stub.
      *
-     * @param object    Stub.
+     * @param instance  Stub.
      * @param rootType  Stub.
      * @param rootIndex Stub.
      * @param <T>       Stub.
      * @param <S>       Stub.
      * @return Stub.
      */
-    public <T, S extends T> Type getSpecificType(S object, Class<T> rootType, int rootIndex) {
-        Class<?> type = object.getClass();
+    public <T, S extends T> Type getSpecificType(S instance, Class<T> rootType, int rootIndex) {
+        Class<?> type = instance.getClass();
 
         TypeVariable<?>[] typeVariables;
 
