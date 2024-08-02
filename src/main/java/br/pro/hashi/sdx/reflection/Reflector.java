@@ -256,12 +256,18 @@ public final class Reflector {
         return () -> new Iterator<>() {
             @Override
             public boolean hasNext() {
-                return !(queue.isEmpty() && stack.isEmpty());
+                update();
+                return !queue.isEmpty();
             }
 
             @Override
             public Class<? extends T> next() {
-                if (queue.isEmpty() && !stack.isEmpty()) {
+                update();
+                return queue.remove();
+            }
+
+            private void update() {
+                while (queue.isEmpty() && !stack.isEmpty()) {
                     String name = stack.pop();
 
                     URL url = loader.getResource(name);
@@ -284,8 +290,6 @@ public final class Reflector {
                         }
                     }
                 }
-
-                return queue.remove();
             }
         };
     }
@@ -365,7 +369,7 @@ public final class Reflector {
         while (!stack.isEmpty()) {
             Node node = stack.peek();
 
-            if (node.moveToNext()) {
+            if (node.update()) {
                 Class<?> superType = node.getSuperType();
 
                 if (superType != null) {
@@ -428,7 +432,7 @@ public final class Reflector {
             return type.getTypeParameters();
         }
 
-        private boolean moveToNext() {
+        private boolean update() {
             index++;
             return index < interfaces.length;
         }
