@@ -28,12 +28,7 @@ public final class ParserFactory {
     private final Reflector reflector;
     private final ConcurrentMap<Class<?>, Function<String, ?>> cache;
 
-    /**
-     * Stub.
-     *
-     * @param reflector Stub.
-     */
-    public ParserFactory(Reflector reflector) {
+    ParserFactory(Reflector reflector) {
         ConcurrentMap<Class<?>, Function<String, ?>> cache = new ConcurrentHashMap<>();
         cache.put(boolean.class, Boolean::parseBoolean);
         cache.put(byte.class, Byte::parseByte);

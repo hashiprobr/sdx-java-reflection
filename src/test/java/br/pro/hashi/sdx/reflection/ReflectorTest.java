@@ -21,7 +21,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.objenesis.instantiator.ObjectInstantiator;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,14 +29,11 @@ import java.lang.reflect.Modifier;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReflectorTest {
-    private static final ClassLoader LOADER = ClassLoader.getSystemClassLoader();
-    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-
     private Reflector r;
 
     @BeforeEach
     void setUp() {
-        r = new Reflector(LOADER, LOOKUP);
+        r = new Reflector();
     }
 
     @ParameterizedTest

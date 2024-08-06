@@ -14,8 +14,11 @@ import br.pro.hashi.sdx.reflection.exception.ReflectionException;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
@@ -29,23 +32,28 @@ import java.util.regex.Pattern;
  * Provides reflection methods.
  */
 public final class Reflector {
+    private static final Pattern SLASH_PATTERN = Pattern.compile("/");
+    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
     private static final Objenesis OBJENESIS = new ObjenesisStd();
-    private static final Pattern PATTERN = Pattern.compile("\\.");
 
-    private final ClassLoader loader;
-    private final MethodHandles.Lookup lookup;
+    private ClassLoader loader;
+    private MethodHandles.Lookup lookup;
     private final ConcurrentMap<Class<?>, ObjectInstantiator<?>> cache;
+    private final Logger logger;
 
-    /**
-     * Constructs a new reflector.
-     *
-     * @param loader A class loader.
-     * @param lookup A lookup object.
-     */
-    public Reflector(ClassLoader loader, MethodHandles.Lookup lookup) {
-        this.loader = loader;
-        this.lookup = lookup;
+    Reflector() {
+        this.loader = ClassLoader.getSystemClassLoader();
+        this.lookup = MethodHandles.lookup();
         this.cache = new ConcurrentHashMap<>();
+        this.logger = LoggerFactory.getLogger(Reflector.class);
+    }
+
+    void setLoader(ClassLoader loader) {
+        this.loader = loader;
+    }
+
+    void setLookup(MethodHandles.Lookup lookup) {
+        this.lookup = lookup;
     }
 
     /**
@@ -251,7 +259,7 @@ public final class Reflector {
         Queue<Class<? extends T>> queue = new LinkedList<>();
 
         Stack<String> stack = new Stack<>();
-        stack.push(PATTERN.matcher(packageName).replaceAll("/"));
+        stack.push(DOT_PATTERN.matcher(packageName).replaceAll("/"));
 
         return () -> new Iterator<>() {
             @Override
@@ -270,12 +278,21 @@ public final class Reflector {
                 while (queue.isEmpty() && !stack.isEmpty()) {
                     String name = stack.pop();
 
-                    URL url = loader.getResource(name);
-                    if (url != null) {
+                    Enumeration<URL> urls;
+                    try {
+                        urls = loader.getResources(name);
+                    } catch (IOException exception) {
+                        logger.error("Could not get resources at %s".formatted(name), exception);
+                        urls = Collections.emptyEnumeration();
+                    }
 
-                        File file = new File(url.getPath());
+                    while (urls.hasMoreElements()) {
+                        URL url = urls.nextElement();
+
+                        String path = url.getPath();
+                        File file = new File(path);
+
                         if (file.canRead()) {
-
                             String[] baseNames = file.list();
                             if (baseNames == null) {
                                 Class<? extends T> subType = getInstantiableSubType(name, superType);
@@ -287,6 +304,8 @@ public final class Reflector {
                                     stack.push("%s/%s".formatted(name, baseName));
                                 }
                             }
+                        } else {
+                            logger.warn("Could not read %s".formatted(path));
                         }
                     }
                 }
@@ -296,13 +315,15 @@ public final class Reflector {
 
     private <T> Class<? extends T> getInstantiableSubType(String name, Class<T> superType) {
         if (name.endsWith(".class")) {
-            String typeName = name.substring(0, name.lastIndexOf('.'));
+            name = name.substring(0, name.lastIndexOf('.'));
+            String typeName = SLASH_PATTERN.matcher(name).replaceAll(".");
             try {
                 Class<?> type = Class.forName(typeName, true, loader);
                 if (superType.isAssignableFrom(type) && getNonInstantiableMessage(type, typeName) == null) {
                     return uncheckedCast(type);
                 }
             } catch (ClassNotFoundException ignored) {
+                logger.warn("Class %s not found".formatted(typeName));
             }
         }
         return null;

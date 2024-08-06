@@ -23,12 +23,7 @@ public final class ConverterFactory {
     private final Reflector reflector;
     private final ConcurrentMap<Class<? extends Converter<?, ?>>, Converter<?, ?>> cache;
 
-    /**
-     * Stub.
-     *
-     * @param reflector Stub.
-     */
-    public ConverterFactory(Reflector reflector) {
+    ConverterFactory(Reflector reflector) {
         this.reflector = reflector;
         this.cache = new ConcurrentHashMap<>();
     }
