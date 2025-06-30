@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.hashiprobr</groupId>
     <artifactId>sdx-reflection</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Simple reflection library shared by sdx-dao and sdx-rest.</description>
     <url>https://github.com/hashiprobr/sdx-java-reflection</url>
